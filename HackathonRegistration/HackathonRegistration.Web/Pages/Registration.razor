@@ -1,0 +1,184 @@
+﻿@page "/registration"
+@page "/registration/{TeamId}"
+@using HackathonRegistration.Web.Models;
+@inject NavigationManager NavigationManager
+
+<PageTitle>Registration</PageTitle>
+
+<MudCard>
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h5">My Profile</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudText Typo="Typo.body2">
+            Provide your email address. We will use this information to:
+        </MudText>
+        <MudList>
+            <MudListItem Text="provide you with a link to your hackathon channel (a Microsoft Teams channel)."
+                         Icon="@Icons.Material.Filled.LabelImportant" />
+            <MudListItem Text="provide you with additional information or important changes related to this event."
+                         Icon="@Icons.Material.Filled.LabelImportant" />
+            <MudListItem Text="allow your assigned coach to reach out to you so they can ensure your team has everything they need to participate in the hackathon."
+                         Icon="@Icons.Material.Filled.LabelImportant" />
+        </MudList>
+
+        <MudTextField Label="Email Address" Variant="Variant.Outlined"
+            @bind-Value="_myProfile.EmailAddress" />
+    </MudCardContent>
+    <MudCardActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                   EndIcon="@Icons.Material.Filled.Save" OnClick="SaveMyProfile">
+            Save My Profile
+        </MudButton>
+    </MudCardActions>
+</MudCard>
+
+<MudCard>
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h5">My Team</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudText Typo="Typo.body2">
+            Hackathons are a team effort and everyone participating in the hackathon 
+            MUST register as part of a team.
+        </MudText>
+        <MudList>
+            <MudListItem Text="A hacakthon team MUST have a minimum of four people."
+                         Icon="@Icons.Material.Filled.LabelImportant" />
+            <MudListItem InitiallyExpanded="true" Text="Depending on your use case, you SHOULD consider team members with the following skills:"
+                         Icon="@Icons.Material.Filled.LabelImportant">
+                <NestedList>
+                    <MudListItem Text="business knowledge of the use case(s) and value to end users"
+                                 Icon="@Icons.Material.Filled.LabelImportant" />
+                    <MudListItem Text="front-end application development in order to develop the end user experience"
+                                 Icon="@Icons.Material.Filled.LabelImportant" />
+                    <MudListItem Text="back-end application development in order to make calls to the HTTP REST endpoints provided by OpenAI"
+                                 Icon="@Icons.Material.Filled.LabelImportant" />
+                </NestedList>
+            </MudListItem>
+        </MudList>
+        <MudText Typo="Typo.body2">
+            Hackathon teams MUST have a minimum of four people.
+            Add email addresses for each of the people you would like to invite to your
+            hackathon team. They will receive an email from Microsoft where they:
+        </MudText>
+        <MudList>
+            <MudListItem Text="MUST confirm they are joining your team by filling out their own Profile page" 
+                         Icon="@Icons.Material.Filled.LabelImportant"/>
+            <MudListItem Text="CAN contribute additional details for your use case"
+                         Icon="@Icons.Material.Filled.LabelImportant" />
+            <MudListItem Text="CAN remove existing team members or invite additional team members"
+                         Icon="@Icons.Material.Filled.LabelImportant" />"
+        </MudList>
+
+        <MudDataGrid Items="_team.TeamMembers">
+            <Columns>
+                <PropertyColumn Property="x => x.EmailAddress" Title="Email Address" />
+                <TemplateColumn>
+                    <CellTemplate>
+                        <MudStack Row>
+                            <MudButton Size="@Size.Small" Variant="@Variant.Filled"
+                                       Color="@Color.Error"
+                                       EndIcon="@Icons.Material.Filled.Delete">
+                                Remove
+                            </MudButton>
+                        </MudStack>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </MudDataGrid>
+
+        <MudText Typo="Typo.body2">
+            Provide a brief description of the use case (or use cases) your team is going
+            to tackle during this event. This information will be shared with your
+            assigned hackathon coach.
+        </MudText>
+
+        <MudTextField Label="Use Case" Variant="Variant.Outlined" Lines="5"
+                      @bind-Value="_team.UseCase" />
+
+        <MudText Typo="Typo.body2">
+            Provide the subscription ID for the Azure subscription you will use 
+            during this event. This information will be shared with your assigned 
+            hackathon coach. To be effective during the hackathon, this 
+            subscription:
+        </MudText>
+        <MudList>
+            <MudListItem Text="MUST have access to Azure OpenAI (or at least OpenAI) endpoints"
+                         Icon="@Icons.Material.Filled.LabelImportant" />
+            <MudListItem Text="MUST allow you to provision and configure any Azure services you'll need for your use case"
+                         Icon="@Icons.Material.Filled.LabelImportant" />
+            <MudListItem Text="MUST have access to any other services or data your use case needs"
+                         Icon="@Icons.Material.Filled.LabelImportant" />
+        </MudList>
+        <MudTextField Label="Subscription Id" Variant="Variant.Outlined" 
+                      @bind-Value="_team.SubscriptionId" />
+
+        <MudText Typo="Typo.body2">
+            While teams can work outside of the established event hours, each team must be
+            associated with a coach tied to a specific time zone.
+        </MudText>
+
+        <MudSelect Label="Event Timezone" Variant="Variant.Outlined"
+                   @bind-Value="_team.EventTimezone">
+            <MudSelectItem Value="@("USCentral")">US Central</MudSelectItem>
+            <MudSelectItem Value="@("WesternEurope")">Western Europe</MudSelectItem>
+            <MudSelectItem Value="@("EasternAsia")">Eastern Asia</MudSelectItem>
+        </MudSelect>
+
+    </MudCardContent>
+    <MudCardActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveMyTeam"
+                   EndIcon="@Icons.Material.Filled.Save">
+            Save My Team
+        </MudButton>
+    </MudCardActions>
+</MudCard>
+
+@code {
+    [Parameter]
+    public string TeamId { get; set; } = string.Empty;
+
+    private TeamMember _myProfile = new();
+
+    private Team _team = new();
+
+    protected override void OnInitialized()
+    {
+        Uri uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        if (string.IsNullOrWhiteSpace(TeamId))
+        {
+            _team = new Team();
+        }
+        else
+        {
+            // fetch team matching provided teamId
+            // _team = await _teamService.GetTeam(teamId);
+            // demo code
+            _team = new Team()
+            {
+                Id = TeamId,
+                EventTimezone = "USCentral",
+                UseCase = "We want to build a hackathon copilot to help hackathon participants with questions about their event or to get guidance on how to hack!", 
+                SubscriptionId = "C56242D5-CD8D-4694-984C-3C42C4A824A7"
+            };
+            _team.TeamMembers.Add(new TeamMember { EmailAddress = "jfattic@microsoft.com" });
+            _team.TeamMembers.Add(new TeamMember { EmailAddress = "sadoshi@microsoft.com" });
+            _team.TeamMembers.Add(new TeamMember { EmailAddress = "dlipien@microsoft.com" });
+        };
+    }
+
+    private void SaveMyProfile()
+    {
+        if(!_team.TeamMembers.Contains(_myProfile))
+            _team.TeamMembers.Add(_myProfile);
+    }
+
+    private void SaveMyTeam()
+    {
+    }
+}
